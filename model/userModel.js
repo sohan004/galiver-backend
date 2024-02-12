@@ -46,6 +46,9 @@ module.exports = galiver_DB.model('User', new mongoose.Schema({
     avatar: {
         type: String,
     },
+    country: {
+        type: String,
+    },
     dob: {
         type: Date,
     },

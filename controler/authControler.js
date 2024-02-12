@@ -4,9 +4,15 @@ const User = require("../model/userModel");
 const jwt = require("jsonwebtoken");
 const emailOtp = require("../utilities/emailOtpSend");
 const Otp = require("../model/otpModel");
+const requestIp = require('request-ip');
+const geoip = require('geoip-lite');
+
 
 
 const signUp = async (req, res) => {
+    // const clientIp = await requestIp.getClientIp(req);
+    // const geo = await geoip.lookup(clientIp);
+    // console.log(clientIp, geo, req.connection.remoteAddress);
     try {
         const { email, password, name } = await req.body;
         const findUser = await User.findOne({ email: email });
