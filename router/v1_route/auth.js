@@ -1,5 +1,5 @@
-const { signUp, signUpOtpVerify, autoLogin, login, adminLogin, adminAutoLogin } = require('../../../controller/authController');
-const tokenVerify = require('../../../middleware/tokenVerify');
+const { signUp, signUpOtpVerify, autoLogin, login, adminLogin, adminAutoLogin } = require('../../controller/authController');
+const tokenVerify = require('../../middleware/tokenVerify');
 
 const router = require('express').Router();
 

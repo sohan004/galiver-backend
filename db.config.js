@@ -1,6 +1,6 @@
  const mongoose = require("mongoose");
 const dbConnect = (dbName) => {
-    const db = mongoose.createConnection(`${process.env.MONGODB_URI}/${dbName}`)
+    const db = mongoose.createConnection(`${process.env.MONGODB_URI}/${dbName}?retryWrites=true&w=majority`)
         .on("error", (error) => {
           console.log(`${dbName} failed to connect.`);
           console.log(error);
