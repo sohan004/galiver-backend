@@ -5,6 +5,7 @@ router.use('/user', require('./user'));
 router.use('/category', require('./category'));
 router.use('/media', require('./media'));
 router.use('/sub-category', require('./subCategory'));
+router.use('/sub-sub-category', require('./subSubCategory'));
 
 
 

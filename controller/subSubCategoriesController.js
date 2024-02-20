@@ -1,9 +1,9 @@
-const SubCategory = require('../model/subCategoryModel');
+const SubSubCategory = require('../model/subSubCategoryModel');
 const genUniqFileName = require('../utilities/genUniqFileName');
 const fs = require('fs');
 const path = require('path');
 
-const getSubCategories = async (req, res) => {
+const getSubSubCategories = async (req, res) => {
     try {
         const { name = '', skip = 0 } = await req.query;
         const limit = 20;
@@ -11,13 +11,13 @@ const getSubCategories = async (req, res) => {
         if (name) {
             searchQuery['name'] = { $regex: name, $options: 'i' }
         }
-        const subCategories = await SubCategory.find(searchQuery)
+        const subSubCategories = await SubSubCategory.find(searchQuery)
             .sort({ createdAt: -1 })
             .skip(parseInt(skip))
             .limit(limit)
-            .populate('category', 'name');
-            const totalSubCategories = await SubCategory.countDocuments(searchQuery);
-        res.status(200).json({ subCategories, totalSubCategories });
+            .populate('subCategory', 'name');
+        const totalSubSubCategories = await SubSubCategory.countDocuments(searchQuery);
+        res.status(200).json({ subSubCategories, totalSubSubCategories });
 
     } catch (error) {
         console.log(error);
@@ -26,9 +26,9 @@ const getSubCategories = async (req, res) => {
 }
 
 
-const createSubCategory = async (req, res) => {
+const createSubSubCategory = async (req, res) => {
     const image = await req.files.image;
-    const { name, categoryId } = await JSON.parse(req.body.data);
+    const { name, subCategoryId } = await JSON.parse(req.body.data);
     try {
         const mediaDir = path.join(__dirname, '../media');
         if (!fs.existsSync(mediaDir)) {
@@ -36,15 +36,15 @@ const createSubCategory = async (req, res) => {
         }
         const fileNewName = await genUniqFileName(image.name);
         const filePath = await path.join(mediaDir, fileNewName);
-        const subCategory = new SubCategory({
+        const subSubCategory = new SubSubCategory({
             name,
             avatar: fileNewName,
-            category: categoryId,
+            subCategory: subCategoryId,
         });
-        await subCategory.save();
+        await subSubCategory.save();
         await image.mv(filePath)
-        const subCategoryPopulated = await SubCategory.findById(subCategory._id).populate('category', 'name');
-        res.status(201).json({ message: 'Sub Category created successfully', subCategory: subCategoryPopulated });
+        const subSubCategoryPopulated = await SubSubCategory.findById(subSubCategory._id).populate('subCategory', 'name');
+        res.status(201).json({ message: 'Sub Category created successfully', subSubCategory: subSubCategoryPopulated });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: error.message });
@@ -52,16 +52,16 @@ const createSubCategory = async (req, res) => {
 }
 
 
-const deleteSubCategory = async (req, res) => {
+const deleteSubSubCategory = async (req, res) => {
     try {
-        const { subCategoryId } = req.params;
-        const subCategory = await SubCategory.findById(subCategoryId);
-        if (!subCategory) {
-            return res.status(404).json({ message: 'Sub Category not found' });
+        const { subSubCategoryId } = req.params;
+        const subSubCategory = await SubSubCategory.findById(subSubCategoryId);
+        if (!subSubCategory) {
+            return res.status(404).json({ message: 'Sub Sub Category not found' });
         }
-        await SubCategory.findByIdAndDelete(subCategoryId);
+        await SubSubCategory.findByIdAndDelete(subSubCategoryId);
         const mediaDir = path.join(__dirname, '../media');
-        const filePath = path.join(mediaDir, subCategory.avatar);
+        const filePath = path.join(mediaDir, subSubCategory.avatar);
         if (fs.existsSync(filePath)) {
             await fs.unlinkSync(filePath);
         }
@@ -72,4 +72,4 @@ const deleteSubCategory = async (req, res) => {
     }
 }
 
-module.exports = { getSubCategories, createSubCategory, deleteSubCategory };
+module.exports = { getSubSubCategories, createSubSubCategory, deleteSubSubCategory };   

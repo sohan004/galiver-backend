@@ -13,6 +13,7 @@ const getAllUsers = async (req, res) => {
                 { name: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } },
                 { userName: { $regex: search, $options: 'i' } },
+                {role: { $regex: search, $options: 'i' } }
             ],
         }
     }

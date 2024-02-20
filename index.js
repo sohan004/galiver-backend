@@ -25,9 +25,10 @@ app.get('/', (req, res) => {
 })
 
 // server connection
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
 })
 
 
-module.exports = { app };
+
+module.exports = { server };
