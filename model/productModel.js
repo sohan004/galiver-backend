@@ -2,8 +2,12 @@ const { default: mongoose } = require("mongoose");
 const { galiver_DB } = require("../db.config");
 
 const attributeProperty = [
-    {
+    new mongoose.Schema({
         name: {
+            type: String,
+            required: true,
+        },
+        value: {
             type: String,
             required: true,
         },
@@ -11,7 +15,7 @@ const attributeProperty = [
             type: Number,
             required: true,
         }
-    }
+    })
 ]
 
 module.exports = galiver_DB.model('Product', new mongoose.Schema({
@@ -35,19 +39,26 @@ module.exports = galiver_DB.model('Product', new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    image: [
-        {
-            type: String,
-        }
+    media: [
+        new mongoose.Schema({
+            name: {
+                type: String,
+                required: true,
+            },
+            type: {
+                type: String,
+                required: true,
+            },
+        })
     ],
     brand: {
         type: String,
-        required: true,
     },
     status: {
         type: String,
         required: true,
-        enum: ['active', 'inactive', 'suspended'],
+        enum: ['active', 'inactive', 'suspended', 'pending', 'rejected'],
+        default: 'pending',
         index: true,
     },
     category: {
@@ -74,18 +85,13 @@ module.exports = galiver_DB.model('Product', new mongoose.Schema({
         type: Number,
         required: true,
     },
-    favorite: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-        }
-
-    ],
     attributes: {
         size: attributeProperty,
         color: attributeProperty,
         material: attributeProperty,
         variant: attributeProperty,
+        height: attributeProperty,
+        width: attributeProperty,
     },
     tags: [
         {

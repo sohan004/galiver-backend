@@ -16,7 +16,7 @@ const getSubCategories = async (req, res) => {
             .skip(parseInt(skip))
             .limit(limit)
             .populate('category', 'name');
-            const totalSubCategories = await SubCategory.countDocuments(searchQuery);
+        const totalSubCategories = await SubCategory.countDocuments(searchQuery);
         res.status(200).json({ subCategories, totalSubCategories });
 
     } catch (error) {
@@ -72,4 +72,16 @@ const deleteSubCategory = async (req, res) => {
     }
 }
 
-module.exports = { getSubCategories, createSubCategory, deleteSubCategory };
+
+const getSpecificSubCategories = async (req, res) => {
+    try {
+        const { categoryId } = req.params;
+        const subCategories = await SubCategory.find({ category: categoryId });
+        res.status(200).json({ subCategories });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+module.exports = { getSubCategories, createSubCategory, deleteSubCategory, getSpecificSubCategories };

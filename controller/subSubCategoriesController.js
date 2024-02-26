@@ -72,4 +72,15 @@ const deleteSubSubCategory = async (req, res) => {
     }
 }
 
-module.exports = { getSubSubCategories, createSubSubCategory, deleteSubSubCategory };   
+const getSpecificSubSubCategories = async (req, res) => {
+    try {
+        const { subCategoryId } = req.params;
+        const subSubCategories = await SubSubCategory.find({ subCategory: subCategoryId });
+        res.status(200).json({ subSubCategories });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+module.exports = { getSubSubCategories, createSubSubCategory, deleteSubSubCategory, getSpecificSubSubCategories };   
