@@ -78,7 +78,7 @@ module.exports = galiver_DB.model('Product', new mongoose.Schema({
         index: true,
     },
     deliveryTime: {
-        type: Number,
+        type: String,
         required: true,
     },
     deliveryCharge: {

@@ -6,7 +6,6 @@ router.use('/category', require('./category'));
 router.use('/media', require('./media'));
 router.use('/sub-category', require('./subCategory'));
 router.use('/sub-sub-category', require('./subSubCategory'));
-
-
+router.use('/product', require('./product'));
 
 module.exports = router;

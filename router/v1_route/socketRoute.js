@@ -14,8 +14,6 @@ const setNewActiveUsers = async (socket) => {
 const socketRoute = (socket, io) => {
     setNewActiveUsers(socket);
 
-
-
     socket.on('disconnect', () => {
         activeUsers = activeUsers.filter(user => user.socketID !== socket.id);
     });
