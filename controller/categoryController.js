@@ -58,5 +58,74 @@ const deleteCategory = async (req, res) => {
 }
 
 
+const getAllCategorySubCategory = async (req, res) => {
+    try {
+        const category = await Category.aggregate([
+            {
+                $lookup: {
+                    from: 'subcategories',
+                    let: { categoryId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$category', '$$categoryId']
+                                }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'subsubcategories',
+                                localField: '_id',
+                                foreignField: 'subCategory',
+                                as: 'subSubCategory'
+                            }
+                        },
+                    ],
+                    as: 'subCategory'
+                }
+            },
+            {
+                $addFields: {
+                    subCategorySize: { $size: '$subCategory' }
+                }
+            },
+            {
+                $sort: { subCategorySize: -1 }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    avatar: 1,
+                    subCategory: {
+                        _id: 1,
+                        name: 1,
+                        avatar: 1,
+                        subSubCategory: {
+                            _id: 1,
+                            name: 1,
+                            avatar: 1
+                        }
 
-module.exports = { categoryGetAdmin, createCategory, deleteCategory };
+                    },
+                }
+            },
+            {
+                $project: {
+                    subCategorySize: 0
+                }
+            }
+        ])
+
+        res.status(200).json({ category: category });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+
+module.exports = { categoryGetAdmin, createCategory, deleteCategory, getAllCategorySubCategory };
