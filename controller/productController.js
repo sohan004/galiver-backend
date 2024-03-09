@@ -2,6 +2,8 @@ const Product = require("../model/productModel");
 const genUniqFileName = require("../utilities/genUniqFileName");
 const path = require('path');
 const fs = require('fs');
+const { default: mongoose } = require("mongoose");
+const Review = require('../model/reviewModel')
 
 const createProduct = async (req, res) => {
     try {
@@ -189,6 +191,116 @@ const inactive = async (req, res) => {
     }
 }
 
+const searchProducts = async (req, res) => {
+    try {
+        const { skip, search, category, sub, subsub, tag, brand, limit } = await req.query;
+        let query = [];
+        if (search) {
+            query.push({ title: { $regex: search, $options: 'i' } });
+        }
+        if (category) {
+            query.push({ category: new mongoose.Types.ObjectId(category) });
+        }
+        if (sub) {
+            query.push({ subCategory: new mongoose.Types.ObjectId(sub) });
+        }
+        if (subsub) {
+            query.push({ subSubCategory: new mongoose.Types.ObjectId(subsub) });
+        }
+        if (tag) {
+            query.push({ tags: { $regex: tag, $options: 'i' } });
+        }
+        if (brand) {
+            query.push({ brand: { $regex: brand, $options: 'i' } });
+        }
+        const products = await Product.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { status: 'active' },
+                        {
+                            $or: [
+                                ...query,
+                                {}
+                            ]
+                        },
+                    ]
+                }
+            },
+            {
+                $skip: skip ? +skip : 0
+            },
+            {
+                $sample: { size: limit ? +limit : 16 }
+            },
+            {
+                $lookup: {
+                    from: 'reviews',
+                    localField: '_id',
+                    foreignField: 'product',
+                    as: 'reviews'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$media',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    title: { $first: '$title' },
+                    price: { $first: '$price' },
+                    discount: { $first: '$discount' },
+                    media: { $first: '$media' },
+                    tags: { $first: '$tags' },
+                    reviews: { $first: '$reviews' },
+                }
+            },
+            {
+                $addFields: {
+                    avgRating: { $avg: '$reviews.rating'},
+                    reviews: { $size: '$reviews' }
+                }
+            },
+            {
+                $addFields: {
+                    avgRating: {
+                        $cond: {
+                            if: { $eq: ['$avgRating', null] },
+                            then: 0,
+                            else: '$avgRating'
+                        }
+                    }
+                }
+            },
+            {
+                $sort: {
+                    avgRating: -1
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    price: 1,
+                    discount: 1,
+                    media: {
+                        name: 1,
+                        type: 1
+                    },
+                    reviews: 1,
+                    avgRating: 1
+                }
+            }
+        ])
+        res.json(products);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json([]);
+    }
+}
+
 
 module.exports = {
     createProduct,
@@ -200,5 +312,6 @@ module.exports = {
     rejectProduct,
     suspendProduct,
     active,
-    inactive
+    inactive,
+    searchProducts
 }
