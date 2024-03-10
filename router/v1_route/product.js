@@ -1,5 +1,6 @@
 const { createProduct, inTotalProduct, getPendingProduct, approveProduct, rejectProduct, getApprovedProduct, getRejectedProduct, active, inactive, searchProducts } = require('../../controller/productController');
 const adminTokenVerify = require('../../middleware/adminTokenVerify');
+const Product = require('../../model/productModel');
 
 const router = require('express').Router();
 
