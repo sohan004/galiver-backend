@@ -3,14 +3,24 @@ const genUniqFileName = require("../utilities/genUniqFileName");
 const path = require('path');
 const fs = require('fs');
 const { default: mongoose } = require("mongoose");
-const Review = require('../model/reviewModel')
+const Review = require('../model/reviewModel');
+const SearchKey = require("../model/searchKeyModel");
 
 const searchProducts = async (req, res) => {
     try {
-        const { skip, search, category, sub, subsub, tag, brand, limit } = await req.query;
+        const { skip, search, category, sub, subsub, limit } = await req.query;
         let query = [];
         if (search) {
             query.push({ title: { $regex: search, $options: 'i' } });
+            query.push({ tags: { $regex: search, $options: 'i' } });
+            query.push({ brand: { $regex: search, $options: 'i' } });
+            const searchKey = await SearchKey.findOne({ name: search });
+            if (searchKey) {
+                searchKey.count = searchKey.count + 1;
+                await searchKey.save();
+            } else {
+                await new SearchKey({ name: search, count: 1 }).save();
+            }
         }
         if (category) {
             query.push({ category: new mongoose.Types.ObjectId(category) });
@@ -21,11 +31,8 @@ const searchProducts = async (req, res) => {
         if (subsub) {
             query.push({ subSubCategory: new mongoose.Types.ObjectId(subsub) });
         }
-        if (tag) {
-            query.push({ tags: { $regex: tag, $options: 'i' } });
-        }
-        if (brand) {
-            query.push({ brand: { $regex: brand, $options: 'i' } });
+        if(query.length === 0) {
+            query.push({});
         }
         const products = await Product.aggregate([
             {
@@ -34,8 +41,7 @@ const searchProducts = async (req, res) => {
                         { status: 'active' },
                         {
                             $or: [
-                                ...query,
-                                {}
+                                ...query
                             ]
                         },
                     ]
