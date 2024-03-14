@@ -5,6 +5,7 @@ const fs = require('fs');
 const { default: mongoose } = require("mongoose");
 const Review = require('../model/reviewModel');
 const SearchKey = require("../model/searchKeyModel");
+const FavProduct = require("../model/favProductModel");
 
 const searchProducts = async (req, res) => {
     try {
@@ -31,7 +32,7 @@ const searchProducts = async (req, res) => {
         if (subsub) {
             query.push({ subSubCategory: new mongoose.Types.ObjectId(subsub) });
         }
-        if(query.length === 0) {
+        if (query.length === 0) {
             query.push({});
         }
         const products = await Product.aggregate([
@@ -128,6 +129,40 @@ const searchProducts = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json([]);
+    }
+}
+
+const productInDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {user} = req.query;
+        const product = await Product.findOne({
+            _id: id,
+            status: { $in: ['active', 'inactive'] }
+        }).populate([
+            {
+                path: 'category',
+            },
+            {
+                path: 'subCategory',
+                select: '-category'
+            },
+            {
+                path: 'subSubCategory',
+                select: '-category -subCategory'
+            }
+        ]).select('-createdAt -updatedAt -__v -click');
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        const reviews = await Review.find({ product: id }).sort({ createdAt: -1 }).populate('user', 'name avatar -_id').limit(5);
+        const totalReview = await Review.find({ product: id }).countDocuments();
+        const fav = await FavProduct.findOne({ user: user || null, product: id });
+
+        res.json({ ...product.toObject(), reviews, totalReview, isFavorite: fav ? true : false });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 
@@ -329,5 +364,6 @@ module.exports = {
     suspendProduct,
     active,
     inactive,
-    searchProducts
+    searchProducts,
+    productInDetail
 }

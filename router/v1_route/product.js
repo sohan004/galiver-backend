@@ -1,4 +1,4 @@
-const { createProduct, inTotalProduct, getPendingProduct, approveProduct, rejectProduct, getApprovedProduct, getRejectedProduct, active, inactive, searchProducts } = require('../../controller/productController');
+const { createProduct, inTotalProduct, getPendingProduct, approveProduct, rejectProduct, getApprovedProduct, getRejectedProduct, active, inactive, searchProducts, productInDetail } = require('../../controller/productController');
 const adminTokenVerify = require('../../middleware/adminTokenVerify');
 const Product = require('../../model/productModel');
 
@@ -6,6 +6,7 @@ const router = require('express').Router();
 
 router.post('/', adminTokenVerify, createProduct)
 router.get('/in-total-product', adminTokenVerify, inTotalProduct)
+router.get('/detail/:id', productInDetail)
 router.get('/pending', adminTokenVerify, getPendingProduct)
 router.get('/approve', adminTokenVerify, getApprovedProduct)
 router.get('/reject', adminTokenVerify, getRejectedProduct)
