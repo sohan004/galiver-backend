@@ -135,7 +135,7 @@ const searchProducts = async (req, res) => {
 const productInDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const {user} = req.query;
+        const { user } = req.query;
         const product = await Product.findOne({
             _id: id,
             status: { $in: ['active', 'inactive'] }
@@ -353,6 +353,34 @@ const inactive = async (req, res) => {
     }
 }
 
+
+const getRandomProducts = async (req, res) => {
+    try {
+        const products = await Product.aggregate([
+            {
+                $match: {
+                    status: 'active'
+                }
+            },
+            {
+                $sample: { size: 10 }
+            },
+            {
+                $project: {
+                    title: 1,
+                    price: 1,
+                    discount: 1,
+                    media:  { $arrayElemAt: ['$media', 0] }
+                }
+            }
+        ])
+        res.json({ products: products });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json([]);
+    }
+}
+
 module.exports = {
     createProduct,
     inTotalProduct,
@@ -365,5 +393,6 @@ module.exports = {
     active,
     inactive,
     searchProducts,
-    productInDetail
+    productInDetail,
+    getRandomProducts
 }
