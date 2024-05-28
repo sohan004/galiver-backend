@@ -5,7 +5,8 @@ const Product = require("../model/productModel");
 const createOrder = async (req, res) => {
     try {
         const data = await req.body;
-        const product = await Product.findById(data.product).select("price title");
+        const product = await Product.findById(data.product).select("price title discount");
+        const discountPrice = await product.price - product.discount;
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
@@ -19,7 +20,7 @@ const createOrder = async (req, res) => {
             district: data.district,
             subDistrict: data.subDistrict,
             deliveryCharge: data.deliveryCharge,
-            total: (product.price * data.quantity) + data.deliveryCharge,
+            total: (discountPrice * data.quantity) + data.deliveryCharge,
             color: data.color || 'N/A',
             size: data.size || 'N/A',
             height: data.height || 'N/A',
@@ -28,7 +29,7 @@ const createOrder = async (req, res) => {
             variant: data.variant || 'N/A',
         });
         await order.save();
-        await orderEmail(data, product.price, totalOrder + 1, (product.price * data.quantity) + data.deliveryCharge, product.title);
+        await orderEmail(data, discountPrice, totalOrder + 1, (discountPrice * data.quantity) + data.deliveryCharge, product.title);
         await res.status(201).json({ message: "Order created successfully" });
     } catch (error) {
         console.log(error);
