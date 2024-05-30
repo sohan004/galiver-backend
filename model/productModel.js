@@ -77,14 +77,6 @@ module.exports = galiver_DB.model('Product', new mongoose.Schema({
         ref: 'SubSubCategory',
         index: true,
     },
-    deliveryTime: {
-        type: String,
-        required: true,
-    },
-    deliveryCharge: {
-        type: Number,
-        required: true,
-    },
     attributes: {
         size: attributeProperty,
         color: attributeProperty,

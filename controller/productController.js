@@ -170,7 +170,7 @@ const productInDetail = async (req, res) => {
 const createProduct = async (req, res) => {
     try {
         const file = await req.files?.media;
-        const { shop, size, color, material, variant, height, width, price, discount, deliveryCharge, subCategory, subSubCategory, ...otherData } = await JSON.parse(req.body.data);
+        const { shop, size, color, material, variant, height, width, price, discount, subCategory, subSubCategory, ...otherData } = await JSON.parse(req.body.data);
         const productImg = Array.isArray(file) ? file : [file]
         const fileUniqName = await Promise.all(productImg.map(async (img) => {
             img.name = await genUniqFileName(img.name);
@@ -198,7 +198,6 @@ const createProduct = async (req, res) => {
             price: +price,
             discount: +discount || 0,
             media: fileNameType,
-            deliveryCharge: +deliveryCharge || 0,
             attributes: {
                 size: size || [],
                 color: color || [],
@@ -219,6 +218,56 @@ const createProduct = async (req, res) => {
         const savedProduct = await product.save();
         res.json({ message: 'Product created successfully', success: true });
 
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const updateProduct = async (req, res) => {
+    try {
+        const { id } = await req.params;
+        const { shop, size, color, material, variant, height, width, price, discount, subCategory, subSubCategory, ...otherData } = await req.body;
+
+
+        let extraData = {}
+        if (subCategory) {
+            extraData['subCategory'] = subCategory;
+        }
+        if (subSubCategory) {
+            extraData['subSubCategory'] = subSubCategory;
+        }
+        if (shop) {
+            extraData['shop'] = shop;
+        }
+
+        await Product.findOneAndUpdate({ _id: id }, {
+            ...otherData,
+            ...extraData,
+            price: +price,
+            discount: +discount || 0,
+            attributes: {
+                size: size || [],
+                color: color || [],
+                material: material || [],
+                variant: variant || [],
+                height: height || [],
+                width: width || []
+            }
+        })
+
+        res.json({ message: 'Product updated successfully', success: true });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Product.findByIdAndDelete(id);
+        res.json({ message: 'Product deleted successfully' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -370,7 +419,7 @@ const getRandomProducts = async (req, res) => {
                     title: 1,
                     price: 1,
                     discount: 1,
-                    media:  { $arrayElemAt: ['$media', 0] }
+                    media: { $arrayElemAt: ['$media', 0] }
                 }
             }
         ])
@@ -394,5 +443,7 @@ module.exports = {
     inactive,
     searchProducts,
     productInDetail,
-    getRandomProducts
+    getRandomProducts,
+    updateProduct,
+    deleteProduct
 }
