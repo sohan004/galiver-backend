@@ -2,11 +2,37 @@ const { default: mongoose } = require("mongoose");
 const { galiver_DB } = require("../db.config");
 
 module.exports = galiver_DB.model('Order', new mongoose.Schema({
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true,
-    },
+    orderProduct: [
+        {
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true,
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            },
+            color: {
+                type: String,
+            },
+            size: {
+                type: String,
+            },
+            height: {
+                type: String,
+            },
+            width: {
+                type: String,
+            },
+            material: {
+                type: String,
+            },
+            variant: {
+                type: String,
+            },
+        }
+    ],
     name: {
         type: String,
         required: true,
@@ -17,10 +43,6 @@ module.exports = galiver_DB.model('Order', new mongoose.Schema({
     },
     address: {
         type: String,
-        required: true,
-    },
-    quantity: {
-        type: Number,
         required: true,
     },
     district: {
@@ -39,22 +61,16 @@ module.exports = galiver_DB.model('Order', new mongoose.Schema({
         type: Number,
         required: true,
     },
-    color: {
+    status: {
+        type: String,
+        required: true,
+        enum: ['pending', 'accepted', 'shipped', 'delivered', 'canceled', 'returned'],
+        default: 'pending',
+    },
+    consignment_id: {
         type: String,
     },
-    size: {
-        type: String,
-    },
-    height: {
-        type: String,
-    },
-    width: {
-        type: String,
-    },
-    material: {
-        type: String,
-    },
-    variant: {
+    tracking_id: {
         type: String,
     },
 }))

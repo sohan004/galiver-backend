@@ -10,10 +10,6 @@ const attributeProperty = [
         value: {
             type: String,
             required: true,
-        },
-        extraCharge: {
-            type: Number,
-            required: true,
         }
     })
 ]

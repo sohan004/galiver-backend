@@ -8,5 +8,6 @@ router.use('/sub-category', require('./subCategory'));
 router.use('/sub-sub-category', require('./subSubCategory'));
 router.use('/product', require('./product'));
 router.use('/order', require('./order'));
+router.use('/courier', require('./courier'));
 
 module.exports = router;
