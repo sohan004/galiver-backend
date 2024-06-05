@@ -17,7 +17,7 @@ const orderEmail = async (data, price, orderNo, total, productName) => {
 
             const mailOptions = await {
                 from: process.env.EMAIL,
-                to: 'aryansohan02@gmail.com',
+                to: 'galiver784@gmail.com',
                 subject: `Order No. ${orderNo}`,
                 html: `<!DOCTYPE html>
                 <html>
