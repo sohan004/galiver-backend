@@ -99,12 +99,90 @@ const acceptOrder = async (req, res) => {
 
 const getOrder = async (req, res) => {
     try {
-        const status = await req.query.status;
+        const { status, phone } = await req.query;
         let quary = {}
         if (status) {
             quary = { status: status }
         }
-        const orders = await Order.find(quary).populate("orderProduct.product", 'title price discount').sort('-updatedAt');
+        if (phone) {
+            quary = { phone: phone }
+        }
+        // const orders = await Order.find(quary).populate("orderProduct.product", 'title price discount').sort('-updatedAt');
+        const orders = await Order.aggregate([
+            {
+                $match: quary
+            },
+            {
+                $unwind: "$orderProduct"
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "orderProduct.product",
+                    foreignField: "_id",
+                    as: "orderProduct.product"
+                }
+            },
+            {
+                $unwind: "$orderProduct.product"
+            },
+            {
+                $addFields: {
+                    'orderProduct.product.media': { $arrayElemAt: ['$orderProduct.product.media', 0] }
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    orderProduct: { $push: "$orderProduct" },
+                    name: { $first: "$name" },
+                    phone: { $first: "$phone" },
+                    address: { $first: "$address" },
+                    district: { $first: "$district" },
+                    subDistrict: { $first: "$subDistrict" },
+                    deliveryCharge: { $first: "$deliveryCharge" },
+                    total: { $first: "$total" },
+                    status: { $first: "$status" },
+                    consignment_id: { $first: "$consignment_id" },
+                    tracking_id: { $first: "$tracking_id" },
+                    updatedAt: { $first: "$updatedAt" }
+                }
+            },
+            {
+                $sort: { updatedAt: -1 }
+            },
+            // {
+            //     $project: {
+            //         _id: 1,
+            //         orderProduct: {
+            //             product: {
+            //                 title: 1,
+            //                 price: 1,
+            //                 discount: 1,
+            //                 media: 1
+            //             },
+            //             quantity: 1,
+            //             color: 1,
+            //             size: 1,
+            //             height: 1,
+            //             width: 1,
+            //             material: 1,
+            //             variant: 1
+            //         },
+            //         name: 1,
+            //         phone: 1,
+            //         address: 1,
+            //         district: 1,
+            //         subDistrict: 1,
+            //         deliveryCharge: 1,
+            //         total: 1,
+            //         status: 1,
+            //         consignment_id: 1,
+            //         tracking_id: 1,
+            //         updatedAt: 1
+            //     }
+            // }
+        ])
         await res.status(200).json(orders);
     } catch (error) {
         console.log(error);
