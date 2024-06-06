@@ -148,40 +148,9 @@ const getOrder = async (req, res) => {
                     updatedAt: { $first: "$updatedAt" }
                 }
             },
-            { 
+            {
                 $sort: { updatedAt: -1 }
             },
-            // {
-            //     $project: {
-            //         _id: 1,
-            //         orderProduct: {
-            //             product: {
-            //                 title: 1,
-            //                 price: 1,
-            //                 discount: 1,
-            //                 media: 1
-            //             },
-            //             quantity: 1,
-            //             color: 1,
-            //             size: 1,
-            //             height: 1,
-            //             width: 1,
-            //             material: 1,
-            //             variant: 1
-            //         },
-            //         name: 1,
-            //         phone: 1,
-            //         address: 1,
-            //         district: 1,
-            //         subDistrict: 1,
-            //         deliveryCharge: 1,
-            //         total: 1,
-            //         status: 1,
-            //         consignment_id: 1,
-            //         tracking_id: 1,
-            //         updatedAt: 1
-            //     }
-            // }
         ])
         await res.status(200).json(orders);
     } catch (error) {
@@ -208,10 +177,28 @@ const changeOrderStatus = async (req, res) => {
     }
 }
 
+const editOrder = async (req, res) => {
+    try {
+        const { orderId, data } = await req.body;
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        const update = await Order.findByIdAndUpdate(orderId, data, {
+            new: true,
+        });
+        await res.status(200).json({ message: "Order updated successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
 
 module.exports = {
     createOrder,
     acceptOrder,
     getOrder,
-    changeOrderStatus
+    changeOrderStatus,
+    editOrder
 };
