@@ -6,6 +6,7 @@ const fileUpload = require('express-fileupload');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const geoip = require('geoip-lite');
+app.set('trust proxy', true);
 
 // Middlewares
 dotenv.config();
