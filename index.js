@@ -5,6 +5,7 @@ const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const geoip = require('geoip-lite');
 
 // Middlewares
 dotenv.config();
@@ -18,6 +19,17 @@ app.use(fileUpload({
 
 // Routes
 app.use('/api/v1', require('./router/v1_route/v1_route'));
+app.get('/ip', async (req, res) => {
+    try {
+        const ip = await req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        var geo = await geoip.lookup(ip);
+        console.log(geo);
+        res.json({ geo });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server Error');
+    }
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
