@@ -24,7 +24,7 @@ app.get('/ip', async (req, res) => {
         const ip = await req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         var geo = await geoip.lookup(ip);
         console.log(geo);
-        res.json({ geo });
+        res.json({ geo , ip});
     } catch (error) {
         console.log(error);
         res.status(500).send('Server Error');
