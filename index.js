@@ -6,6 +6,7 @@ const fileUpload = require('express-fileupload');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const geoip = require('geoip-lite');
+const { getName, getCode } = require('country-list');
 
 // Middlewares
 dotenv.config();
@@ -17,14 +18,21 @@ app.use(fileUpload({
     tempFileDir: './temp/'
 }));
 
+app.use('/', (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    const geo = geoip.lookup(ip)?.country || 'BD'
+    const countryName = getName(geo);
+    console.log(geo, countryName);
+    req.country = countryName;
+    next();
+});
+
 // Routes
 app.use('/api/v1', require('./router/v1_route/v1_route'));
 app.get('/ip', async (req, res) => {
     try {
-        const ip = await req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
-        var geo = await geoip.lookup(ip);
-        console.log(geo);
-        res.json({ geo , ip});
+        const country = await req.country;
+        res.json({ country });
     } catch (error) {
         console.log(error);
         res.status(500).send('Server Error');
