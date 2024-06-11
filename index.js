@@ -6,7 +6,7 @@ const fileUpload = require('express-fileupload');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const geoip = require('geoip-lite');
-const { getName, getCode } = require('country-list');
+const { getCountries } = require('node-countries');
 
 // Middlewares
 dotenv.config();
@@ -21,8 +21,13 @@ app.use(fileUpload({
 app.use('/', (req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
     const geo = geoip.lookup(ip)?.country || 'BD'
-    const countryName = getName(geo);
-    console.log(geo, countryName);
+    const country = getCountries().find(c => {
+        if (c?.alpha2?.toLowerCase() === geo?.toLowerCase()) return c;
+        else if (c?.alpha3?.toLowerCase() === geo?.toLowerCase()) return c;
+        else if (c?.name?.toLowerCase() === geo?.toLowerCase()) return c;
+    })
+    const countryName = country?.name?.toLowerCase()
+    console.log(countryName);
     req.country = countryName;
     next();
 });
