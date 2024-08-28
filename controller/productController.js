@@ -293,7 +293,10 @@ const inTotalProduct = async (req, res) => {
 
 const getPendingProduct = async (req, res) => {
     try {
+        const { skip } = await req.query;
         const pendingProduct = await Product.find({ status: 'pending' }).sort({ createdAt: -1 })
+            .skip(skip ? +skip : 0)
+            .limit(10);
         res.json(pendingProduct);
     } catch (error) {
         console.log(error);
@@ -304,7 +307,10 @@ const getPendingProduct = async (req, res) => {
 
 const getApprovedProduct = async (req, res) => {
     try {
+        const { skip } = await req.query;
         const approvedProduct = await Product.find({ status: { $in: ['active', 'inactive'] } }).sort({ createdAt: -1 })
+            .skip(skip ? +skip : 0)
+            .limit(10);
         res.json(approvedProduct);
     } catch (error) {
         console.log(error);
@@ -314,7 +320,10 @@ const getApprovedProduct = async (req, res) => {
 
 const getRejectedProduct = async (req, res) => {
     try {
+        const { skip } = await req.query;
         const rejectedProduct = await Product.find({ status: { $in: ['suspended', 'rejected'] } }).sort({ createdAt: -1 })
+            .skip(skip ? +skip : 0)
+            .limit(10);
         res.json(rejectedProduct);
     } catch (error) {
         console.log(error);
@@ -324,7 +333,7 @@ const getRejectedProduct = async (req, res) => {
 
 const approveProduct = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = await req.params;
         const product = await Product.findById(id);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
@@ -430,6 +439,17 @@ const getRandomProducts = async (req, res) => {
     }
 }
 
+
+const getAllProductName = async (req, res) => {
+    try {
+        const products = await Product.find({ status: 'active' }).select('title _id');
+        await res.json(products);
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
 module.exports = {
     createProduct,
     inTotalProduct,
@@ -445,5 +465,6 @@ module.exports = {
     productInDetail,
     getRandomProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAllProductName
 }

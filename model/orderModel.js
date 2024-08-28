@@ -73,4 +73,6 @@ module.exports = galiver_DB.model('Order', new mongoose.Schema({
     tracking_id: {
         type: String,
     },
+}, {
+    timestamps: true,
 }))

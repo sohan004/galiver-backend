@@ -9,5 +9,6 @@ router.use('/sub-sub-category', require('./subSubCategory'));
 router.use('/product', require('./product'));
 router.use('/order', require('./order'));
 router.use('/courier', require('./courier'));
+router.use('/landing-page', require('./landingPageRoute'));
 
 module.exports = router;

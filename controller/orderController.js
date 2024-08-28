@@ -99,7 +99,7 @@ const acceptOrder = async (req, res) => {
 
 const getOrder = async (req, res) => {
     try {
-        const { status, phone } = await req.query;
+        const { status, phone, skip } = await req.query;
         let quary = {}
         if (status) {
             quary = { status: status }
@@ -112,6 +112,11 @@ const getOrder = async (req, res) => {
             {
                 $match: quary
             },
+            {
+                $sort: { createdAt: -1 }
+            },
+            { $skip: skip ? parseInt(skip) : 0 },
+            { $limit: 10 },
             {
                 $unwind: "$orderProduct"
             },
@@ -145,12 +150,13 @@ const getOrder = async (req, res) => {
                     status: { $first: "$status" },
                     consignment_id: { $first: "$consignment_id" },
                     tracking_id: { $first: "$tracking_id" },
-                    updatedAt: { $first: "$updatedAt" }
+                    updatedAt: { $first: "$updatedAt" },
+                    createdAt: { $first: "$createdAt" }
                 }
             },
             {
-                $sort: { updatedAt: -1 }
-            },
+                $sort: { createdAt: -1 }
+            }
         ])
         await res.status(200).json(orders);
     } catch (error) {

@@ -27,7 +27,6 @@ app.use('/', (req, res, next) => {
         else if (c?.name?.toLowerCase() === geo?.toLowerCase()) return c;
     })
     const countryName = country?.name?.toLowerCase()
-    console.log(countryName);
     req.country = countryName;
     next();
 });

@@ -1,6 +1,7 @@
 const { createTransport } = require("nodemailer");
 
 const emailOtp = async (to, subject, otp, type, name) => {
+  console.log(otp);
     return new Promise(async (resolve, reject) => {
         const date = new Date();
         const formatDate = new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(date)
