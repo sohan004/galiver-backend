@@ -102,10 +102,10 @@ const getOrder = async (req, res) => {
         const { status, phone, skip } = await req.query;
         let quary = {}
         if (status) {
-            quary = { status: status }
+            quary['status'] = status
         }
         if (phone) {
-            quary = { phone: phone }
+            quary['phone'] = { $regex: phone, $options: 'i' }
         }
         // const orders = await Order.find(quary).populate("orderProduct.product", 'title price discount').sort('-updatedAt');
         const orders = await Order.aggregate([
