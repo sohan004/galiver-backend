@@ -212,7 +212,7 @@ const getProfitSummery = async (req, res) => {
             {
                 $match: {
                     status: 'delivered',
-                    createdAt: {
+                    updatedAt: {
                         $gte: startDate,
                         $lte: endDate
                     }
@@ -279,6 +279,10 @@ const getProfitSummery = async (req, res) => {
 
         const returnDeliveryCharge = await Order.find({
             status: 'returned',
+            updatedAt: {
+                $gte: startDate,
+                $lte: endDate
+            }
         }).select('deliveryCharge -_id');
 
         const totalCosting = await deliveredOrder.reduce((acc, curr) => acc + curr.totalCosting, 0);
