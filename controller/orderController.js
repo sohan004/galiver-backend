@@ -276,12 +276,13 @@ const getProfitSummery = async (req, res) => {
             },
             {
                 $project: {
-                    _id: 0,
+                    _id: 1,
                     totalCosting: 1,
                     sellingPrice: 1
                 }
             }
         ])
+
 
         const returnDeliveryCharge = await Order.find({
             $and: [
