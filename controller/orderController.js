@@ -211,11 +211,15 @@ const getProfitSummery = async (req, res) => {
         const deliveredOrder = await Order.aggregate([
             {
                 $match: {
-                    status: 'delivered',
-                    updatedAt: {
-                        $gte: startDate,
-                        $lte: endDate
-                    }
+                    $and: [
+                        { status: 'delivered' },
+                        {
+                            updatedAt: {
+                                $gte: startDate,
+                                $lte: endDate
+                            }
+                        }
+                    ]
                 },
             },
             {
@@ -230,7 +234,9 @@ const getProfitSummery = async (req, res) => {
                 },
             },
             {
-                $unwind: "$orderProduct.product"
+                $addFields: {
+                    'orderProduct.product': { $arrayElemAt: ['$orderProduct.product', 0] }
+                }
             },
             {
                 $group: {
@@ -278,11 +284,15 @@ const getProfitSummery = async (req, res) => {
         ])
 
         const returnDeliveryCharge = await Order.find({
-            status: 'returned',
-            updatedAt: {
-                $gte: startDate,
-                $lte: endDate
-            }
+            $and: [
+                { status: 'returned' },
+                {
+                    updatedAt: {
+                        $gte: startDate,
+                        $lte: endDate
+                    }
+                }
+            ]
         }).select('deliveryCharge -_id');
 
         const totalCosting = await deliveredOrder.reduce((acc, curr) => acc + curr.totalCosting, 0);
