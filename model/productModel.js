@@ -15,11 +15,12 @@ const attributeProperty = [
 ]
 
 module.exports = galiver_DB.model('Product', new mongoose.Schema({
-    shop: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Shop',
-    },
     title: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    id: {
         type: String,
         required: true,
         index: true,
@@ -91,7 +92,12 @@ module.exports = galiver_DB.model('Product', new mongoose.Schema({
         type: Number,
         required: true,
         default: 0
-    }
+    },
+    costing: {
+        type: Number,
+        required: true,
+        default: 0
+    },
 }, {
     timestamps: true,
 }))

@@ -2,6 +2,10 @@ const { default: mongoose } = require("mongoose");
 const { galiver_DB } = require("../db.config");
 
 module.exports = galiver_DB.model('Order', new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     orderProduct: [
         {
             product: {
@@ -50,7 +54,7 @@ module.exports = galiver_DB.model('Order', new mongoose.Schema({
         required: true,
     },
     subDistrict: {
-        type: String,
+        type: String,  // Upazila
         required: true,
     },
     deliveryCharge: {

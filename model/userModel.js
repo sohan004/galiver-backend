@@ -19,10 +19,6 @@ module.exports = galiver_DB.model('User', new mongoose.Schema({
     password: {
         type: String,
     },
-    verifiedEmail: {
-        type: Boolean,
-        default: false,
-    },
     phoneNumber: {
         type: String,
     },
@@ -39,7 +35,7 @@ module.exports = galiver_DB.model('User', new mongoose.Schema({
         district: {
             type: String,
         },
-        area: {
+        subDistrict: {
             type: String,
         },
     },
@@ -53,12 +49,6 @@ module.exports = galiver_DB.model('User', new mongoose.Schema({
         type: Boolean,
         required: true,
         default: true,
-    },
-    loginType: {
-        type: String,
-        enum: ['local', 'google'],
-        required: true,
-        default: 'local',
     },
 }, {
     timestamps: true

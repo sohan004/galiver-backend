@@ -31,7 +31,7 @@ const createOrder = async (req, res) => {
             address: data.address,
             quantity: data.quantity,
             district: data.district,
-            subDistrict: data.subDistrict,
+            subDistrict: data.subDistrict, // Upazila
             deliveryCharge: data.deliveryCharge,
             total: (discountPrice * data.quantity) + data.deliveryCharge,
         });
@@ -200,11 +200,112 @@ const editOrder = async (req, res) => {
     }
 }
 
+const getProfitSummery = async (req, res) => {
+    try {
+        const { from, to } = await req.query;
+        const startDate = new Date(`${from}T00:00:00.000Z`);
+        const endDate = new Date(`${to}T23:59:59.999Z`);
+
+        console.log(startDate, endDate);
+
+        const deliveredOrder = await Order.aggregate([
+            {
+                $match: {
+                    status: 'delivered',
+                    createdAt: {
+                        $gte: startDate,
+                        $lte: endDate
+                    }
+                },
+            },
+            {
+                $unwind: "$orderProduct"
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "orderProduct.product",
+                    foreignField: "_id",
+                    as: "orderProduct.product"
+                },
+            },
+            {
+                $unwind: "$orderProduct.product"
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    orderProduct: {
+                        $push: {
+                            product: "$orderProduct.product",
+                            quantity: "$orderProduct.quantity"
+                        }
+                    },
+                    name: { $first: "$name" },
+                    phone: { $first: "$phone" },
+                    address: { $first: "$address" },
+                    district: { $first: "$district" },
+                    subDistrict: { $first: "$subDistrict" },
+                    deliveryCharge: { $first: "$deliveryCharge" },
+                    total: { $first: "$total" },
+                }
+            },
+            {
+                $addFields: {
+                    totalCosting: {
+                        $sum: {
+                            $map: {
+                                input: "$orderProduct",
+                                as: "order",
+                                in: {
+                                    $multiply: ["$$order.product.costing", "$$order.quantity"]
+                                }
+                            }
+                        },
+                    },
+                    sellingPrice: {
+                        $subtract: ["$total", "$deliveryCharge"]
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalCosting: 1,
+                    sellingPrice: 1
+                }
+            }
+        ])
+
+        const returnDeliveryCharge = await Order.find({
+            status: 'returned',
+        }).select('deliveryCharge -_id');
+
+        const totalCosting = await deliveredOrder.reduce((acc, curr) => acc + curr.totalCosting, 0);
+        const totalSellingPrice = await deliveredOrder.reduce((acc, curr) => acc + curr.sellingPrice, 0);
+        const totalReturnDeliveryCharge = await returnDeliveryCharge.reduce((acc, curr) => acc + curr.deliveryCharge, 0);
+        const totalProfit = totalSellingPrice - totalCosting - totalReturnDeliveryCharge;
+
+        await res.status(200).json({
+            totalCosting,
+            totalSellingPrice,
+            totalProfit,
+            totalDelivered: deliveredOrder.length,
+            totalReturned: returnDeliveryCharge.length,
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     createOrder,
     acceptOrder,
     getOrder,
     changeOrderStatus,
-    editOrder
+    editOrder,
+    getProfitSummery
 };

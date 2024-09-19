@@ -4,15 +4,11 @@ const jwt = require("jsonwebtoken");
 const User = require("../model/userModel");
 const emailOtp = require("../emailService/emailOtpSend");
 const Otp = require("../model/otpModel");
-const requestIp = require('request-ip');
 const congratulationEmail = require("../emailService/congratulation");
 
 
 
 const signUp = async (req, res) => {
-    // const clientIp = await requestIp.getClientIp(req);
-    // const geo = await geoip.lookup(clientIp);
-    // console.log(clientIp, geo, req.connection.remoteAddress);
     try {
         const { email, password, name } = await req.body;
         const findUser = await User.findOne({ email: email });
@@ -67,8 +63,7 @@ const signUpOtpVerify = async (req, res) => {
         delete decode?.otp;
         delete decode?.iat;
         delete decode?.exp;
-        decode['verifiedEmail'] = true;
-
+        
         const newUser = await new User(decode);
         await newUser.save();
         const newToken = await jwt.sign({

@@ -41,41 +41,13 @@ const searchProducts = async (req, res) => {
                     $and: [
                         { status: 'active' },
                         {
-                            $or: [
-                                ...query
-                            ]
+                            $or: query
                         },
                     ]
                 }
             },
             {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'product',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    avgRating: { $avg: '$reviews.rating' },
-                    reviews: { $size: '$reviews' }
-                }
-            },
-            {
-                $addFields: {
-                    avgRating: {
-                        $cond: {
-                            if: { $eq: ['$avgRating', null] },
-                            then: 0,
-                            else: '$avgRating'
-                        }
-                    }
-                }
-            },
-            {
                 $sort: {
-                    avgRating: -1,
                     createdAt: -1,
                 }
             },
@@ -97,22 +69,18 @@ const searchProducts = async (req, res) => {
             {
                 $group: {
                     _id: '$_id',
+                    id: { $first: '$id' },
                     title: { $first: '$title' },
                     price: { $first: '$price' },
                     discount: { $first: '$discount' },
                     media: { $first: '$media' },
                     tags: { $first: '$tags' },
-                    reviews: { $first: '$reviews' },
-                    avgRating: { $first: '$avgRating' }
-                }
-            },
-            {
-                $sort: {
-                    avgRating: -1
                 }
             },
             {
                 $project: {
+                    _id: 1,
+                    id: 1,
                     title: 1,
                     price: 1,
                     discount: 1,
@@ -120,8 +88,6 @@ const searchProducts = async (req, res) => {
                         name: 1,
                         type: 1
                     },
-                    reviews: 1,
-                    avgRating: 1
                 }
             }
         ])
@@ -135,10 +101,16 @@ const searchProducts = async (req, res) => {
 const productInDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user } = req.query;
+        const userId = req?.user?.id;
         const product = await Product.findOne({
-            _id: id,
-            status: { $in: ['active', 'inactive'] }
+            $or: [
+                {
+                    _id: id,
+                },
+                {
+                    id: id,
+                }
+            ]
         }).populate([
             {
                 path: 'category',
@@ -157,9 +129,9 @@ const productInDetail = async (req, res) => {
         }
         const reviews = await Review.find({ product: id }).sort({ createdAt: -1 }).populate('user', 'name avatar -_id').limit(5);
         const totalReview = await Review.find({ product: id }).countDocuments();
-        const fav = await FavProduct.findOne({ user: user || null, product: id });
+        const fav = await FavProduct.findOne({ user: userId || null, product: id });
 
-        res.json({ ...product.toObject(), reviews, totalReview, isFavorite: fav ? true : false });
+        res.json({ ...product.toObject(), reviews, totalReview, favorite: fav ? true : false });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -196,6 +168,7 @@ const createProduct = async (req, res) => {
             ...otherData,
             ...extraData,
             price: +price,
+            id: await otherData.title.replace(/ /g, '-').toLowerCase(),
             discount: +discount || 0,
             media: fileNameType,
             attributes: {
@@ -227,7 +200,8 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const { id } = await req.params;
-        const { shop, size, color, material, variant, height, width, price, discount, subCategory, subSubCategory, ...otherData } = await req.body;
+        const { shop, size, color, material, variant, height, width, price, discount, subCategory, subSubCategory, costing, ...otherData } = await req.body;
+
 
 
         let extraData = {}
@@ -449,6 +423,8 @@ const getAllProductName = async (req, res) => {
         return [];
     }
 }
+
+
 
 module.exports = {
     createProduct,
