@@ -203,6 +203,7 @@ const updateProduct = async (req, res) => {
         const { shop, size, color, material, variant, height, width, price, discount, subCategory, subSubCategory, costing, ...otherData } = await req.body;
 
 
+        console.log(costing);
 
         let extraData = {}
         if (subCategory) {
@@ -220,6 +221,7 @@ const updateProduct = async (req, res) => {
             ...extraData,
             price: +price,
             discount: +discount || 0,
+            costing: +costing ,
             attributes: {
                 size: size || [],
                 color: color || [],
