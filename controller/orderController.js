@@ -44,6 +44,51 @@ const createOrder = async (req, res) => {
 };
 
 
+const createMultipleOrder = async (req, res) => {
+    try {
+        const data = await req.body;
+        console.log(data);
+        let products = [];
+        let total = 0;
+        quantity = 0;
+
+        await Promise.all(Object.keys(data?.products).map(async (key) => {
+            const productId = await data.products[key].product;
+            const product = await Product.findById(productId).select("price title discount _id");
+            const discountPrice = await product.price - product.discount;
+            if (!product) {
+                return res.status(404).json({ message: "Product not found" });
+            }
+            quantity += data.products[key].quantity;
+            total += await (discountPrice * data.products[key].quantity)
+            await products.push(data.products[key]);
+            return products;
+        }));
+
+        total += data.deliveryCharge;
+
+        const order = await new Order({
+            orderProduct: products,
+            name: data.name,
+            phone: data.phone,
+            email: data.email || '',
+            address: data.address,
+            quantity: quantity,
+            district: data.district,
+            subDistrict: data.subDistrict, // Upazila
+            deliveryCharge: data.deliveryCharge,
+            total: total,
+        }).save();
+
+        await res.status(201).json({ message: "Order created successfully" });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
 const createSteedFastOrder = async ({ _id, name, phone, address, subDistrict, district, total }, note, { api_key, secret_key }) => {
     try {
         const body = await {
@@ -322,5 +367,6 @@ module.exports = {
     getOrder,
     changeOrderStatus,
     editOrder,
-    getProfitSummery
+    getProfitSummery,
+    createMultipleOrder
 };

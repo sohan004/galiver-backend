@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 const { galiver_DB } = require("../db.config");
 
 module.exports = galiver_DB.model('User', new mongoose.Schema({
-    userName: {
-        type: String,
-        required: true,
-        unique: true,
-    },
     name: {
         type: String,
         required: true,
@@ -44,12 +39,7 @@ module.exports = galiver_DB.model('User', new mongoose.Schema({
     },
     dob: {
         type: Date,
-    },
-    isActive: {
-        type: Boolean,
-        required: true,
-        default: true,
-    },
+    }
 }, {
     timestamps: true
 }))

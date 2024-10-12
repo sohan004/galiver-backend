@@ -116,7 +116,7 @@ const emailOtp = async (to, subject, otp, type, name) => {
                    Use the following OTP
                     to complete the procedure to ${type} your account. OTP is
                     valid for
-                    <span style="font-weight: 600; color: #1f1f1f;">3 minutes</span>.
+                    <span style="font-weight: 600; color: #1f1f1f;">5 minutes</span>.
                     Do not share this code with others
                   </p>
                   <p

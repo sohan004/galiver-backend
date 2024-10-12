@@ -86,7 +86,6 @@ const searchProducts = async (req, res) => {
                     discount: 1,
                     media: {
                         name: 1,
-                        type: 1
                     },
                 }
             }

@@ -45,6 +45,9 @@ module.exports = galiver_DB.model('Order', new mongoose.Schema({
         type: String,
         required: true,
     },
+    email: {
+        type: String,
+    },
     address: {
         type: String,
         required: true,
