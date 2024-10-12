@@ -1,4 +1,4 @@
-const { createProduct, inTotalProduct, getPendingProduct, approveProduct, rejectProduct, getApprovedProduct, getRejectedProduct, active, inactive, searchProducts, productInDetail, getRandomProducts, updateProduct, deleteProduct, getAllProductName } = require('../../controller/productController');
+const { createProduct, inTotalProduct, getPendingProduct, approveProduct, rejectProduct, getApprovedProduct, getRejectedProduct, active, inactive, searchProducts, productInDetail, getRandomProducts, updateProduct, deleteProduct, getAllProductName, productFeed } = require('../../controller/productController');
 const adminTokenVerify = require('../../middleware/adminTokenVerify');
 const Product = require('../../model/productModel');
 
@@ -19,6 +19,7 @@ router.put('/inactive/:id', adminTokenVerify, inactive)
 router.get('/search', searchProducts)
 router.get('/random', getRandomProducts)
 router.get('/get-all', getAllProductName)
+router.get('/feed', productFeed)
 
 module.exports = router;
 

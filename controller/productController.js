@@ -220,7 +220,7 @@ const updateProduct = async (req, res) => {
             ...extraData,
             price: +price,
             discount: +discount || 0,
-            costing: +costing ,
+            costing: +costing,
             attributes: {
                 size: size || [],
                 color: color || [],
@@ -426,6 +426,36 @@ const getAllProductName = async (req, res) => {
 }
 
 
+const productFeed = async (req, res) => {
+    try {
+        const products = await Product.find({ status: 'active' });
+
+        // Create CSV format
+        const csv = [
+            'id,title,description,availability,condition,price,link,image_link',  // Headers
+            ...products.map(product => [
+                product._id,  // Required: Product ID
+                product.title,  // Required: Product title
+                product.description,  // Required: Product description
+                'in stock',  // Required: Availability (set to 'in stock', 'out of stock', etc.)
+                'new',  // Required: Product condition (set to 'new', 'used', etc.)
+                `${product.price - product.discount} BDT`,  // Required: Price with currency
+                `https://galiver.shop/product/${product._id}`,  // Required: Product URL
+                `https://api.galiver.shop/api/v1/media?name=${product.media[0].name}`,  // Required: Image URL
+            ].join(','))
+        ].join('\n');
+
+        res.header('Content-Type', 'text/csv');
+        res.attachment('product_feed.csv');
+        return res.send(csv);
+
+    } catch (error) {
+        console.error('Error generating product feed:', error);
+        res.status(500).send('Error generating product feed');
+    }
+}
+
+
 
 module.exports = {
     createProduct,
@@ -443,5 +473,6 @@ module.exports = {
     getRandomProducts,
     updateProduct,
     deleteProduct,
-    getAllProductName
+    getAllProductName,
+    productFeed
 }
