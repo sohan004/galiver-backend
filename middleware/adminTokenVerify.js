@@ -8,7 +8,7 @@ const adminTokenVerify = async (req, res, next) => {
             return res.status(400).json({ message: 'Unauthorize Request' });
         }
         const decode = await jwt.verify(token, process.env.JWT_SECRET);
-        const findUser = await User.findById(decode.userID).select('role')
+        const findUser = await User.findById(decode.id).select('role')
         if (!findUser) {
             return res.status(400).json({ message: 'User not found' });
         }
