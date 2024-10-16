@@ -6,6 +6,7 @@ const { default: mongoose } = require("mongoose");
 const Review = require('../model/reviewModel');
 const SearchKey = require("../model/searchKeyModel");
 const FavProduct = require("../model/favProductModel");
+const { Parser } = require("json2csv");
 
 const searchProducts = async (req, res) => {
     try {
@@ -414,6 +415,24 @@ const getRandomProducts = async (req, res) => {
     }
 }
 
+const fetchProductData = async () => {
+    const products = await Product.find({ status: 'active' })
+    const allProduct = await Promise.all(products.map(async (product) => {
+        return {
+            id: product._id,
+            title: product.title,
+            description: product.description,
+            availability: 'in stock',
+            condition: 'new',
+            price: `${product.price - product.discount} BDT`,
+            link: `https://galiver.shop/product/${product._id}`,
+            image_link: `https://api.galiver.shop/api/v1/media?name=${product.media[0].name}`,
+        }
+    }))
+
+    return allProduct;
+};
+
 
 const getAllProductName = async (req, res) => {
     try {
@@ -428,30 +447,17 @@ const getAllProductName = async (req, res) => {
 
 const productFeed = async (req, res) => {
     try {
-        const products = await Product.find({ status: 'active' });
-
-        // Create CSV format
-        const csv = [
-            'id,title,description,availability,condition,price,link,image_link',  // Headers
-            ...products.map(product => [
-                product._id,  // Required: Product ID
-                product.title,  // Required: Product title
-                product.description,  // Required: Product description
-                'in stock',  // Required: Availability (set to 'in stock', 'out of stock', etc.)
-                'new',  // Required: Product condition (set to 'new', 'used', etc.)
-                `${product.price - product.discount} BDT`,  // Required: Price with currency
-                `https://galiver.shop/product/${product._id}`,  // Required: Product URL
-                `https://api.galiver.shop/api/v1/media?name=${product.media[0].name}`,  // Required: Image URL
-            ].join(','))
-        ].join('\n');
+        const products = await fetchProductData();
+        const fields = ['id', 'title', 'description', 'availability', 'condition', 'price', 'link', 'image_link'];
+        const json2csvParser = new Parser({ fields });
+        const csv = json2csvParser.parse(products);
 
         res.header('Content-Type', 'text/csv');
         res.attachment('product_feed.csv');
-        return res.send(csv);
-
+        res.send(csv);
     } catch (error) {
-        console.error('Error generating product feed:', error);
-        res.status(500).send('Error generating product feed');
+        console.error(error);
+        res.status(500).send('Server Error');
     }
 }
 
